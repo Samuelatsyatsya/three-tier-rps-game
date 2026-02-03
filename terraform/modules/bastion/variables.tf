@@ -14,5 +14,14 @@ variable "bastion_instance_type" {
 variable "bastion_ami_id" {}
 
 variable "key_name" {
-  default = null
+}
+
+variable "volume_size" {
+  description = "volume size in GB"
+  type = number
+}
+
+variable "volume_type" {
+  description = "volume type"
+  type = string
 }
