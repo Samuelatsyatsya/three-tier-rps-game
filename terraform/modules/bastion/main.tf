@@ -8,8 +8,8 @@ resource "aws_instance" "bastion" {
   associate_public_ip_address = true
   
   root_block_device {
-    volume_size = 20
-    volume_type = "gp3"
+    volume_size = var.volume_size
+    volume_type = var.volume_type
     encrypted   = true
   }
   
@@ -23,7 +23,7 @@ resource "aws_instance" "bastion" {
   }
 }
 
-# Elastic IP for bastion (optional but recommended)
+# Elastic IP for bastion
 resource "aws_eip" "bastion" {
   domain = "vpc"
   
