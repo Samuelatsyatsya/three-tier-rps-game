@@ -8,7 +8,7 @@ on:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  DB_SECRET_NAME: ${{ secrets.DB_SECRET_NAME }} 
+  DB_SECRET_NAME: ${{ secrets.DB_SECRET_NAME }}
 
 jobs:
   build-and-push:
@@ -28,34 +28,42 @@ jobs:
       - name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Backend Image
+      # Backend image
       - name: Build & Push Backend Image
         env:
           ECR_BACKEND_REPO: ${{ secrets.ECR_BACKEND_REPO }}
         run: |
-          BACKEND_TAG=backend:${GITHUB_SHA::8}
-          docker build --cache-from $ECR_BACKEND_REPO:backend-latest -t $ECR_BACKEND_REPO:$BACKEND_TAG ./backend
-          docker tag $ECR_BACKEND_REPO:$BACKEND_TAG $ECR_BACKEND_REPO:backend-latest
-          docker push $ECR_BACKEND_REPO:$BACKEND_TAG
-          docker push $ECR_BACKEND_REPO:backend-latest
+          IMAGE_TAG=${GITHUB_SHA::8}
 
-      # Frontend Image
+          docker build \
+            -t $ECR_BACKEND_REPO:$IMAGE_TAG \
+            -t $ECR_BACKEND_REPO:latest \
+            ./backend
+
+          docker push $ECR_BACKEND_REPO:$IMAGE_TAG
+          docker push $ECR_BACKEND_REPO:latest
+
+      # Frontend image
       - name: Build & Push Frontend Image
         env:
           ECR_FRONTEND_REPO: ${{ secrets.ECR_FRONTEND_REPO }}
         run: |
-          FRONTEND_TAG=frontend:${GITHUB_SHA::8}
-          docker build --cache-from $ECR_FRONTEND_REPO:frontend-latest -t $ECR_FRONTEND_REPO:$FRONTEND_TAG ./frontend
-          docker tag $ECR_FRONTEND_REPO:$FRONTEND_TAG $ECR_FRONTEND_REPO:frontend-latest
-          docker push $ECR_FRONTEND_REPO:$FRONTEND_TAG
-          docker push $ECR_FRONTEND_REPO:frontend-latest
+          IMAGE_TAG=${GITHUB_SHA::8}
 
-      # #Trigger Ansible Deployment
+          docker build \
+            -t $ECR_FRONTEND_REPO:$IMAGE_TAG \
+            -t $ECR_FRONTEND_REPO:latest \
+            ./frontend
+
+          docker push $ECR_FRONTEND_REPO:$IMAGE_TAG
+          docker push $ECR_FRONTEND_REPO:latest
+
+      # Ansible deployment (disabled for now)
       # - name: Trigger Ansible Deployment
-      #   uses: dawidd6/action-ansible@v2
-      #   with:
-      #     playbook: ansible/playbooks/site.yml
-      #     inventory: ansible/aws_ec2.yml
+      #   run: |
+      #     ansible-playbook \
+      #       -i ansible/aws_ec2.yml \
+      #       ansible/playbooks/site.yml
       #   env:
       #     ANSIBLE_HOST_KEY_CHECKING: "False"
       #     AWS_REGION: ${{ env.AWS_REGION }}
