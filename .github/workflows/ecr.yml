@@ -1,48 +1,66 @@
-name: Build & Push to ECR
+name: Build & Push Docker Images
 
 on:
   push:
     branches:
-      - staging
+      - staging   # Trigger when merging into staging
   workflow_dispatch:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REPO: ${{ secrets.ECR_REPOSITORY }}
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+      # Login to ECR
+      - name: Login to AWS ECR
+        uses: aws-actions/amazon-ecr-login@v2
 
-      # Build & push backend image
+    
+      # Backend Image
       - name: Build & Push Backend Image
+        env:
+          ECR_BACKEND_REPO: ${{ secrets.ECR_BACKEND_REPO }}
         run: |
           BACKEND_TAG=backend:${GITHUB_SHA::8}
-          docker build -t $ECR_REPO:$BACKEND_TAG ./backend
-          docker tag $ECR_REPO:$BACKEND_TAG $ECR_REPO:backend-latest
-          docker push $ECR_REPO:$BACKEND_TAG
-          docker push $ECR_REPO:backend-latest
+          docker build --cache-from $ECR_BACKEND_REPO:backend-latest -t $ECR_BACKEND_REPO:$BACKEND_TAG ./backend
+          docker tag $ECR_BACKEND_REPO:$BACKEND_TAG $ECR_BACKEND_REPO:backend-latest
+          docker push $ECR_BACKEND_REPO:$BACKEND_TAG
+          docker push $ECR_BACKEND_REPO:backend-latest
 
-      # Build & push frontend image
+  
+      # Frontend Image
       - name: Build & Push Frontend Image
+        env:
+          ECR_FRONTEND_REPO: ${{ secrets.ECR_FRONTEND_REPO }}
         run: |
           FRONTEND_TAG=frontend:${GITHUB_SHA::8}
-          docker build -t $ECR_REPO:$FRONTEND_TAG ./frontend
-          docker tag $ECR_REPO:$FRONTEND_TAG $ECR_REPO:frontend-latest
-          docker push $ECR_REPO:$FRONTEND_TAG
-          docker push $ECR_REPO:frontend-latest
+          docker build --cache-from $ECR_FRONTEND_REPO:frontend-latest -t $ECR_FRONTEND_REPO:$FRONTEND_TAG ./frontend
+          docker tag $ECR_FRONTEND_REPO:$FRONTEND_TAG $ECR_FRONTEND_REPO:frontend-latest
+          docker push $ECR_FRONTEND_REPO:$FRONTEND_TAG
+          docker push $ECR_FRONTEND_REPO:frontend-latest
+
+    
+      # Ansible Deployment
+      - name: Trigger Ansible Deployment
+        uses: dawidd6/action-ansible@v2
+        with:
+          playbook: ansible/playbooks/site.yml
+          inventory: ansible/aws_ec2.yml  # dynamic inventory
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          AWS_REGION: ${{ env.AWS_REGION }}
