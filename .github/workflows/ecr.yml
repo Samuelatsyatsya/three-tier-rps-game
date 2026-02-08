@@ -50,13 +50,13 @@ jobs:
           docker push $ECR_FRONTEND_REPO:$FRONTEND_TAG
           docker push $ECR_FRONTEND_REPO:frontend-latest
 
-      #Trigger Ansible Deployment
-      - name: Trigger Ansible Deployment
-        uses: dawidd6/action-ansible@v2
-        with:
-          playbook: ansible/playbooks/site.yml
-          inventory: ansible/aws_ec2.yml
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
-          AWS_REGION: ${{ env.AWS_REGION }}
-          DB_SECRET_NAME: ${{ env.DB_SECRET_NAME }}
+      # #Trigger Ansible Deployment
+      # - name: Trigger Ansible Deployment
+      #   uses: dawidd6/action-ansible@v2
+      #   with:
+      #     playbook: ansible/playbooks/site.yml
+      #     inventory: ansible/aws_ec2.yml
+      #   env:
+      #     ANSIBLE_HOST_KEY_CHECKING: "False"
+      #     AWS_REGION: ${{ env.AWS_REGION }}
+      #     DB_SECRET_NAME: ${{ env.DB_SECRET_NAME }}
