@@ -57,7 +57,7 @@ jobs:
     
       # Ansible Deployment
       - name: Trigger Ansible Deployment
-        uses: dawidd6/action-ansible@v2
+        uses: ansible/ansible-runner-action@v2.2
         with:
           playbook: ansible/playbooks/site.yml
           inventory: ansible/aws_ec2.yml  # dynamic inventory
