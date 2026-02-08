@@ -56,11 +56,11 @@ jobs:
 
     
       # Ansible Deployment
-      - name: Trigger Ansible Deployment
-        uses: ansible/ansible-runner-action@v2.2
-        with:
-          playbook: ansible/playbooks/site.yml
-          inventory: ansible/aws_ec2.yml  # dynamic inventory
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
-          AWS_REGION: ${{ env.AWS_REGION }}
+      # - name: Trigger Ansible Deployment
+      #   uses: ansible/ansible-runner-action@v2.2
+      #   with:
+      #     playbook: ansible/playbooks/site.yml
+      #     inventory: ansible/aws_ec2.yml  # dynamic inventory
+      #   env:
+      #     ANSIBLE_HOST_KEY_CHECKING: "False"
+      #     AWS_REGION: ${{ env.AWS_REGION }}
