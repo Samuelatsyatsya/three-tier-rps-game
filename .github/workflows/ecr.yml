@@ -3,22 +3,21 @@ name: Build & Push Docker Images
 on:
   push:
     branches:
-      - staging   # Trigger when merging into staging
+      - staging
   workflow_dispatch:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
+  DB_SECRET_NAME: ${{ secrets.DB_SECRET_NAME }} 
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -26,11 +25,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # Login to ECR
       - name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-    
       # Backend Image
       - name: Build & Push Backend Image
         env:
@@ -42,7 +39,6 @@ jobs:
           docker push $ECR_BACKEND_REPO:$BACKEND_TAG
           docker push $ECR_BACKEND_REPO:backend-latest
 
-  
       # Frontend Image
       - name: Build & Push Frontend Image
         env:
@@ -54,13 +50,13 @@ jobs:
           docker push $ECR_FRONTEND_REPO:$FRONTEND_TAG
           docker push $ECR_FRONTEND_REPO:frontend-latest
 
-    
-      # Ansible Deployment
-      # - name: Trigger Ansible Deployment
-      #   uses: ansible/ansible-runner-action@v2.2
-      #   with:
-      #     playbook: ansible/playbooks/site.yml
-      #     inventory: ansible/aws_ec2.yml  # dynamic inventory
-      #   env:
-      #     ANSIBLE_HOST_KEY_CHECKING: "False"
-      #     AWS_REGION: ${{ env.AWS_REGION }}
+      #Trigger Ansible Deployment
+      - name: Trigger Ansible Deployment
+        uses: dawidd6/action-ansible@v2
+        with:
+          playbook: ansible/playbooks/site.yml
+          inventory: ansible/aws_ec2.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          AWS_REGION: ${{ env.AWS_REGION }}
+          DB_SECRET_NAME: ${{ env.DB_SECRET_NAME }}
