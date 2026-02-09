@@ -29,6 +29,12 @@
   become: yes
   when: aws_cli_check.rc != 0
 
+- name: Login to AWS ECR
+  shell: |
+    aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ backend_image.split(':')[0].split('/')[0] }}
+  become: yes
+  no_log: true
+
 - name: Fetch database credentials from AWS Secrets Manager
   shell: |
     aws secretsmanager get-secret-value \
