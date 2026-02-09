@@ -18,3 +18,4 @@ hostnames:
 
 compose:
   ansible_host: private_ip_address
+  ansible_ssh_common_args: '-o ProxyCommand="ssh -i ~/.ssh/rps-game-keypair.pem -W %h:%p ubuntu@{{ lookup("env", "BASTION_HOST") }}"'
