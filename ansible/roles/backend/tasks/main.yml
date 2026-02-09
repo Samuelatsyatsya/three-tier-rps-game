@@ -1,0 +1,29 @@
+---
+- name: Fetch database credentials from AWS Secrets Manager
+  community.aws.aws_secret:
+    name: "{{ lookup('env','DB_SECRET_NAME') }}"
+    region: "{{ lookup('env','AWS_REGION') }}"
+  register: db_secrets
+
+- name: Set DB credentials as facts
+  set_fact:
+    db_username: "{{ db_secrets.value.username }}"
+    db_password: "{{ db_secrets.value.password }}"
+    db_host:     "{{ db_secrets.value.host }}"
+    db_name:     "{{ db_secrets.value.dbname }}"
+    db_port:     "{{ db_secrets.value.port }}"
+  no_log: true
+
+- name: Template docker-compose.yml for backend
+  template:
+    src: docker-compose.yml.j2
+    dest: /home/ubuntu/app/docker-compose.yml
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+
+- name: Deploy backend container
+  community.docker.docker_compose_v2:
+    project_src: /home/ubuntu/app
+    restarted: true
+    remove_orphans: true

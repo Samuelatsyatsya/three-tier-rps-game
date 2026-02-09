@@ -1,0 +1,62 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import gameRoutes from './routes/game.routes.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { HTTP_STATUS } from './config/constants.js';
+
+const app = express();
+
+// Security middleware
+app.use(helmet());
+
+// CORS configuration
+app.use(cors({
+  origin: process.env.CORS_ORIGIN,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000,
+  message: {
+    success: false,
+    message: 'Too many requests from this IP, please try again later.'
+  }
+});
+app.use('/api/v1', limiter);
+
+// Body parsing middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(HTTP_STATUS.OK).json({
+    success: true,
+    message: 'Server is healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV
+  });
+});
+
+// API routes
+const API_PREFIX = process.env.API_PREFIX;
+app.use(`${API_PREFIX}/game`, gameRoutes);
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(HTTP_STATUS.NOT_FOUND).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`
+  });
+});
+
+// Error handling middleware 
+app.use(errorHandler);
+
+export default app;

@@ -1,0 +1,23 @@
+events { }
+
+http {
+    upstream backend {
+        server backend:{{ backend_port }};
+    }
+
+    server {
+        listen {{ nginx_port }};
+
+        location / {
+            proxy_pass http://frontend:{{ frontend_port }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        location /api/ {
+            proxy_pass http://backend:{{ backend_port }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+    }
+}
