@@ -1,4 +1,4 @@
-name: Build & Push Docker Images
+name: Build & Deploy Application
 
 on:
   push:
@@ -11,7 +11,7 @@ env:
   DB_SECRET_NAME: ${{ secrets.DB_SECRET_NAME }}
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -58,13 +58,27 @@ jobs:
           docker push $ECR_FRONTEND_REPO:$IMAGE_TAG
           docker push $ECR_FRONTEND_REPO:latest
 
-      # Ansible deployment (disabled for now)
-      # - name: Trigger Ansible Deployment
-      #   run: |
-      #     ansible-playbook \
-      #       -i ansible/aws_ec2.yml \
-      #       ansible/playbooks/site.yml
-      #   env:
-      #     ANSIBLE_HOST_KEY_CHECKING: "False"
-      #     AWS_REGION: ${{ env.AWS_REGION }}
-      #     DB_SECRET_NAME: ${{ env.DB_SECRET_NAME }}
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Ansible and dependencies
+        run: |
+          pip install ansible boto3 botocore
+          ansible-galaxy collection install community.aws community.docker
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/rps-game-keypair.pem
+          chmod 600 ~/.ssh/rps-game-keypair.pem
+
+      - name: Run Ansible playbook
+        env:
+          BASTION_HOST: ${{ secrets.BASTION_HOST }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          DB_SECRET_NAME: ${{ secrets.DB_SECRET_NAME }}
+          ECR_BACKEND_REPO: ${{ secrets.ECR_BACKEND_REPO }}
+          ECR_FRONTEND_REPO: ${{ secrets.ECR_FRONTEND_REPO }}
+        run: ansible-playbook playbooks/site.yml -i inventory/aws_ec2.yml
