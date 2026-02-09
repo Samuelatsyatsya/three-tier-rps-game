@@ -1,18 +1,33 @@
 ---
+- name: Debug configuration
+  debug:
+    msg:
+      - "DB Secret Name: {{ db_secret_name }}"
+      - "AWS Region: {{ aws_region }}"
+      - "Backend Image: {{ backend_image }}"
+
 - name: Fetch database credentials from AWS Secrets Manager
   community.aws.aws_secret:
-    name: "{{ lookup('env','DB_SECRET_NAME') }}"
-    region: "{{ lookup('env','AWS_REGION') }}"
+    name: "{{ db_secret_name }}"
+    region: "{{ aws_region }}"
   register: db_secrets
 
 - name: Set DB credentials as facts
   set_fact:
     db_username: "{{ db_secrets.value.username }}"
     db_password: "{{ db_secrets.value.password }}"
-    db_host:     "{{ db_secrets.value.host }}"
-    db_name:     "{{ db_secrets.value.dbname }}"
-    db_port:     "{{ db_secrets.value.port }}"
+    db_host: "{{ db_secrets.value.host }}"
+    db_name: "{{ db_secrets.value.dbname }}"
+    db_port: "{{ db_secrets.value.port }}"
   no_log: true
+
+- name: Create app directory
+  file:
+    path: /home/ubuntu/app
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
 
 - name: Template docker-compose.yml for backend
   template:
