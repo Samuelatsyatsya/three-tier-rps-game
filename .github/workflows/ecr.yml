@@ -75,6 +75,7 @@ jobs:
           chmod 600 ~/.ssh/rps-game-keypair.pem
 
       - name: Run Ansible playbook
+        working-directory: ./ansible
         env:
           BASTION_HOST: ${{ secrets.BASTION_HOST }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
