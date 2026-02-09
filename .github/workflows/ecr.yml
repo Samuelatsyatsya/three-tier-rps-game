@@ -82,4 +82,4 @@ jobs:
           DB_SECRET_NAME: ${{ secrets.DB_SECRET_NAME }}
           ECR_BACKEND_REPO: ${{ secrets.ECR_BACKEND_REPO }}
           ECR_FRONTEND_REPO: ${{ secrets.ECR_FRONTEND_REPO }}
-        run: ansible-playbook ansible/playbooks/site.yml -i ansible/inventory/aws_ec2.yml
+        run: ansible-playbook playbooks/site.yml -i inventory/aws_ec2.yml
