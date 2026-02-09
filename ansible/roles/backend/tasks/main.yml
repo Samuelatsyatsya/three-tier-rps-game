@@ -6,11 +6,28 @@
       - "AWS Region: {{ aws_region }}"
       - "Backend Image: {{ backend_image }}"
 
-- name: Install AWS CLI if not present
+- name: Install unzip (required for AWS CLI)
   apt:
-    name: awscli
+    name: unzip
     state: present
+    update_cache: yes
   become: yes
+
+- name: Check if AWS CLI is installed
+  command: aws --version
+  register: aws_cli_check
+  ignore_errors: yes
+  changed_when: false
+
+- name: Install AWS CLI v2
+  shell: |
+    cd /tmp
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip -o awscliv2.zip
+    ./aws/install --update
+    rm -rf awscliv2.zip aws
+  become: yes
+  when: aws_cli_check.rc != 0
 
 - name: Fetch database credentials from AWS Secrets Manager
   shell: |
