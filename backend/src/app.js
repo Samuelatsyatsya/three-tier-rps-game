@@ -16,15 +16,20 @@ app.use(helmet());
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN,
+  origin: process.env.CORS_ORIGIN || '*',  
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Handle preflight requests for all routes
+app.options('*', cors());
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000,
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000,
   message: {
     success: false,
@@ -51,7 +56,7 @@ app.get('/health', (req, res) => {
 const API_PREFIX = process.env.API_PREFIX;
 app.use(`${API_PREFIX}/game`, gameRoutes);
 
-// Add API health endpoint that frontend expects
+// Add API health endpoint
 app.get(`${API_PREFIX}/health`, (req, res) => {
   res.status(HTTP_STATUS.OK).json({
     success: true,
