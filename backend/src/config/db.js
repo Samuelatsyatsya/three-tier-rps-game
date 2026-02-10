@@ -68,7 +68,19 @@ async function initializeSequelize() {
 // Create the sequelize instance
 const sequelize = await initializeSequelize();
 
-// Export for named import: import { sequelize } from '../config/db.js';
+// Test connection function (what server.js needs)
+export const testConnection = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Database connection test successful.');
+    return true;
+  } catch (error) {
+    console.error('Database connection test failed:', error.message);
+    return false;
+  }
+};
+
+// Export for named imports
 export { sequelize };
 
 // Export as default for compatibility
