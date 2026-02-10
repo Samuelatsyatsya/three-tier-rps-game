@@ -8,7 +8,7 @@ import { HTTP_STATUS } from './config/constants.js';
 
 const app = express();
 
-// Trust proxy (nginx) - ADD THIS LINE
+// Trust proxy (nginx)
 app.set('trust proxy', true);
 
 // Security middleware
