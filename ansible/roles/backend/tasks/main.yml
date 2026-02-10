@@ -35,30 +35,6 @@
   become: yes
   no_log: true
 
-- name: Fetch database credentials from AWS Secrets Manager
-  shell: |
-    aws secretsmanager get-secret-value \
-      --secret-id "{{ db_secret_name }}" \
-      --region "{{ aws_region }}" \
-      --query SecretString \
-      --output text
-  register: db_secret_json
-  no_log: true
-
-- name: Parse database credentials
-  set_fact:
-    db_secrets_parsed: "{{ db_secret_json.stdout | from_json }}"
-  no_log: true
-
-- name: Set DB credentials as facts
-  set_fact:
-    db_username: "{{ db_secrets_parsed.username }}"
-    db_password: "{{ db_secrets_parsed.password }}"
-    db_host: "{{ db_secrets_parsed.host }}"
-    db_name: "{{ db_secrets_parsed.dbname }}"
-    db_port: "{{ db_secrets_parsed.port }}"
-  no_log: true
-
 - name: Create app directory
   file:
     path: /home/ubuntu/app
