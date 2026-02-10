@@ -4,7 +4,7 @@ services:
     container_name: frontend
     restart: unless-stopped
     environment:
-      API_URL: "http://backend:{{ backend_port }}"
+      API_URL: "/api/v1"
     networks:
       - app-network
 
