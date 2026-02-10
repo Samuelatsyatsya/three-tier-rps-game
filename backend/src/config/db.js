@@ -1,10 +1,7 @@
-// 
-
-
 import { Sequelize } from 'sequelize';
 import AWS from 'aws-sdk';
 
-// Configure AWS SDK region (can also use process.env.AWS_REGION)
+// Configure AWS SDK region
 AWS.config.update({ region: process.env.AWS_REGION });
 
 const secretsManager = new AWS.SecretsManager();
@@ -22,17 +19,17 @@ async function getDbCredentials(secretName) {
 
 // Initialize Sequelize with dynamic credentials
 async function initSequelize() {
-  const secretName = process.env.DB_SECRET_NAME; // Set this as an env variable
+  const secretName = process.env.DB_SECRET_NAME;
   const creds = await getDbCredentials(secretName);
 
   const sequelize = new Sequelize(
+    creds.dbname,  // database name first
     creds.username,
     creds.password,
     {
       host: creds.host,
       port: creds.port,
-      database: creds.dbname,
-      dialect: 'mysql', // or process.env.DB_DIALECT
+      dialect: 'mysql',
       logging: process.env.NODE_ENV === 'development' ? console.log : false,
       pool: {
         max: 10,
@@ -58,4 +55,8 @@ async function initSequelize() {
   }
 }
 
-export default initSequelize;
+// Create and export the sequelize instance
+const sequelize = await initSequelize();
+
+export { sequelize };  // Named export
+export default sequelize;  // Also default export for compatibility
