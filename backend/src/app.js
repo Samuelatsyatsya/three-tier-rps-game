@@ -8,6 +8,9 @@ import { HTTP_STATUS } from './config/constants.js';
 
 const app = express();
 
+// Trust proxy (nginx) - ADD THIS LINE
+app.set('trust proxy', true);
+
 // Security middleware
 app.use(helmet());
 
@@ -47,6 +50,17 @@ app.get('/health', (req, res) => {
 // API routes
 const API_PREFIX = process.env.API_PREFIX;
 app.use(`${API_PREFIX}/game`, gameRoutes);
+
+// Add API health endpoint that frontend expects
+app.get(`${API_PREFIX}/health`, (req, res) => {
+  res.status(HTTP_STATUS.OK).json({
+    success: true,
+    status: 'online',
+    message: 'API is healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV
+  });
+});
 
 // 404 handler
 app.use('*', (req, res) => {
