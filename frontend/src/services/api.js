@@ -94,16 +94,17 @@ export const gameApi = {
     });
     return response.data;
   },
-
-  // Health check
-  healthCheck: async () => {
-    try {
-      const response = await axios.get(`${API_URL.replace('/api/v1', '')}/health`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+  
+// Health check
+healthCheck: async () => {
+  try {
+    const response = await api.get('/health'); // Use api instance with baseURL
+    return response.data;
+  } catch (error) {
+    throw error;
   }
+}
+
 };
 
 export default api;
