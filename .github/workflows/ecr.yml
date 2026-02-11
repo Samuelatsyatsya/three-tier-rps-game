@@ -51,6 +51,7 @@ jobs:
           IMAGE_TAG=${GITHUB_SHA::8}
 
           docker build \
+            --build-arg VITE_API_URL="${{ secrets.VITE_API_URL }}" \
             -t $ECR_FRONTEND_REPO:$IMAGE_TAG \
             -t $ECR_FRONTEND_REPO:latest \
             ./frontend
