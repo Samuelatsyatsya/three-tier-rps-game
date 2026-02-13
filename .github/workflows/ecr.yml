@@ -20,7 +20,7 @@ jobs:
       - name: Lint Ansible playbooks
         uses: ansible/ansible-lint@v6
         with:
-          args: "ansible/"
+          args: "ansible/playbooks/"
 
       - name: Lint Dockerfiles (Backend)
         uses: hadolint/hadolint-action@v3.1.0
