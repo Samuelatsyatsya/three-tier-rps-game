@@ -1,0 +1,9 @@
+# .ansible-lint
+exclude_paths:
+  - .github/
+
+#find roles
+kinds:
+  - roles: ansible/roles/**
+  - playbook: ansible/playbooks/*.yml
+
