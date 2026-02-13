@@ -17,6 +17,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Install Ansible collections
+        run: |
+          ansible-galaxy collection install community.docker community.aws
+
       - name: Lint Ansible playbooks
         env:
           ANSIBLE_ROLES_PATH: ansible/roles
