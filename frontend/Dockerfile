@@ -27,7 +27,7 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Install serve to serve static files
-RUN npm install -g serve
+RUN npm install -g serve@14.2.3
 
 # Copy built app
 COPY --from=build /app/dist ./dist
