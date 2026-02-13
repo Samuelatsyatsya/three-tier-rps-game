@@ -17,16 +17,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Ansible collections
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Ansible and collections
         run: |
+          pip install ansible-lint ansible-core
           ansible-galaxy collection install community.docker community.aws
 
       - name: Lint Ansible playbooks
         env:
           ANSIBLE_ROLES_PATH: ansible/roles
-        uses: ansible/ansible-lint@v6
-        with:
-          args: "ansible/playbooks/"
+        run: ansible-lint ansible/playbooks/
 
       - name: Lint Dockerfiles (Backend)
         uses: hadolint/hadolint-action@v3.1.0
