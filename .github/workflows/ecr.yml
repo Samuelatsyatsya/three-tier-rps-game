@@ -11,7 +11,34 @@ env:
   DB_SECRET_NAME: ${{ secrets.DB_SECRET_NAME }}
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Lint Ansible playbooks
+        uses: ansible/ansible-lint@v6
+        with:
+          args: "ansible/"
+
+      - name: Lint Dockerfiles (Backend)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: backend/Dockerfile
+          
+      - name: Lint Dockerfiles (Frontend)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: frontend/Dockerfile
+
+      - name: Lint GitHub Actions workflow
+        uses: docker://rhysd/actionlint:latest
+        with:
+          args: -color
+
   build-and-deploy:
+    needs: lint
     runs-on: ubuntu-latest
 
     steps:
